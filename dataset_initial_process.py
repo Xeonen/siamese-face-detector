@@ -3,9 +3,11 @@ This script performs dataset inspection and preprocessing for Siamese Face Detec
 """
 
 import pandas as pd
+import numpy as np
 import os
 import shutil
 from tqdm import tqdm
+
 
 # Load the dataset
 loc = "F:\\Datasets\\CelebA"
@@ -26,17 +28,33 @@ df.reset_index(drop=True, inplace=True)
 val_id = df.iloc[int((1-val_split)*df.shape[0]), 1]
 df["train"] = df["id"].apply(lambda x: True if x < val_id else False)
 
+
+# Copy the images to the target directory
+def copy_file(df, loc, target, sub_dir = "img"):
+    for file in tqdm(df["image_id"]):
+        file = file.replace("jpg", "png")
+        src = os.path.join(loc, "img", "img_align_celeba_png", file)
+        dst = os.path.join(target, sub_dir, file)
+        shutil.copy(src, dst)
+
+def copy_grouped(df, loc):
+    for id in tqdm(df["id"]):
+        tmp_df = df.iloc[np.where(df["id"] == id)[0], :]
+        if not os.path.exists(os.path.join("data", "grouped_img", str(id))):
+            os.makedirs(os.path.join("data", "grouped_img", str(id)))
+        copy_file(tmp_df, loc, "data", sub_dir = os.path.join("grouped_img", str(id)))
+        
+
+
 # Create the target directory for the preprocessed images
 target = "data/img"
 if not os.path.exists(target):
     os.makedirs(target)
 
 # Copy the images to the target directory
-for file in tqdm(df["image_id"]):
-    file = file.replace("jpg", "png")
-    src = os.path.join(loc, "img", "img_align_celeba_png", file)
-    dst = os.path.join(target, file)
-    shutil.copy(src, dst)
+copy_file(df, loc, "data", "img")
 
 # Save the preprocessed dataset as a CSV file
 df.to_csv(os.path.join("data", "identity_CelebA.csv"), sep=",", index=False)
+
+
