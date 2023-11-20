@@ -10,6 +10,7 @@ from tqdm import tqdm
 # Load the dataset
 loc = "F:\\Datasets\\CelebA"
 df = pd.read_csv(os.path.join(loc, "Anno", "identity_CelebA.txt"), sep=" ", header=None)
+# image_id: image file name, id: identity number of the celebrity
 df.columns = ["image_id", "id"]
 
 # Filter out celebrities with fewer than 30 images
