@@ -55,6 +55,7 @@ if not os.path.exists(target):
 copy_file(df, loc, "data", "img")
 
 # Save the preprocessed dataset as a CSV file
+df["image_id"] = df["image_id"].apply(lambda x: x.replace("jpg", "png"))
 df.to_csv(os.path.join("data", "identity_CelebA.csv"), sep=",", index=False)
 
 
