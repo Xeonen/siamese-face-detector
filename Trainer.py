@@ -31,8 +31,8 @@ class Trainer:
         self.model.to(self.device)
 
     def set_dataloaders(self) -> None:
-        self.train_loader = DataLoader(CelebADataset(root=self.root, train=True), batch_size=self.train_batch_size, shuffle=True)
-        self.val_loader = DataLoader(CelebADataset(root=self.root, train=False), batch_size=self.validation_batch_size, shuffle=False)
+        self.train_loader = DataLoader(CelebADataset(root=self.root, train=True), batch_size=self.train_batch_size, shuffle=True, num_workers=4)
+        self.val_loader = DataLoader(CelebADataset(root=self.root, train=False), batch_size=self.validation_batch_size, shuffle=False, num_workers=4)
 
     def set_optimizer(self) -> None:
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
@@ -102,11 +102,45 @@ class Trainer:
             tmp_dict["negative"].append(negative_distance)
             self.set_pbar(pbar, tmp_dict)
 
+        loss = np.mean(tmp_dict["loss"])
+        positive = np.mean(tmp_dict["positive"])
+        negative = np.mean(tmp_dict["negative"])
+
+
+        if train:
+            self.trainer_dict["train"]["loss"].append(loss)
+            self.trainer_dict["train"]["positive"].append(positive)
+            self.trainer_dict["train"]["negative"].append(negative)
+        else:
+            self.trainer_dict["val"]["loss"].append(loss)
+            self.trainer_dict["val"]["positive"].append(positive)
+            self.trainer_dict["val"]["negative"].append(negative)
+
+        return loss, positive, negative
+    
+
+    def train(self) -> None:
+        min_loss = np.inf
+        for epoch in range(self.epoch):
+            self.train_step(train=True, epoch=epoch)
+            loss, positive, negative = self.train_step(train=False, epoch=epoch)
+            if loss < min_loss:
+                min_loss = loss
+                model_info = f"model_e_{epoch}_l_{loss}.pth"
+                torch.save(self.model.state_dict(), model_info)
+                print(f"Model saved as {model_info}")
+
+        with open("trainer_dict.npy", "wb") as f:
+            np.save(f, self.trainer_dict)
+
+
+
 
 
 
 
 # %%
-trainer = Trainer(SiameseNetworkTripletLoss(), root="", train_batch_size=32, validation_batch_size=32, epochs=10)
-trainer.train_step(train=True, epoch=0)
+if __name__ == "__main__":
+    trainer = Trainer(SiameseNetworkTripletLoss(), root="", train_batch_size=32, validation_batch_size=32, epochs=5)
+    trainer.train()
 # %%
