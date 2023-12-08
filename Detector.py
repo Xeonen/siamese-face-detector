@@ -224,17 +224,14 @@ class Detector(ModelOps):
 
 
 if __name__ == "__main__":
-    img_id = "10036.png"
+    img_id = "10144.png"
     img = Image.open(f"data/single_images/{img_id}")
     detector = Detector(model_loc="model_e_4_l_0.1467277131297434.pth")
+    # detector.bank.generate_arr()
     detector_dict = detector.detect(img, img_id)
     for key in detector_dict.keys():
         print(key, detector_dict[key])
 
     # bankOps.generate_arr()
     # bankOps.get_arr_dict()
-
-        
-os.path.split('data\\process\\ali')
-
-
+    # bankOps.purge_arr()
