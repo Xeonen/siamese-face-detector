@@ -142,6 +142,24 @@ class BankOps(ModelOps):
         else:
             print("{name} not found")
 
+    def remove_folder(self, name) -> None:
+        """
+        Removes the folder with the specified name from the process directory.
+
+        Args:
+            name (str): The name of the folder to remove.
+        """
+        path = os.path.join(self.process_dir, name)
+        if os.path.exists(path):
+            os.remove(path)
+
+    def purge_folder(self) -> None:
+        """
+        Removes all folders from the process directory.
+        """
+        for name in os.listdir(self.process_dir):
+            self.remove_folder(name)
+
     def purge_arr(self) -> None:
         """
         Removes all arrays from the bank.
@@ -227,11 +245,16 @@ if __name__ == "__main__":
     img_id = "10144.png"
     img = Image.open(f"data/single_images/{img_id}")
     detector = Detector(model_loc="model_e_4_l_0.1467277131297434.pth")
-    # detector.bank.generate_arr()
+    # Generates numpy arrays and saves them to the bank directory.
+    # detector.bank.generate_arr() 
+    # Removes all of the numpy arrays from the bank directory.
+    # detector.bank.purge_arr()
+    # Removes a specific numpy array from the bank directory.
+    # detector.bank.remove_arr("10144")
+    # Removes a specific folder from the process directory.
+    # detector.bank.remove_folder("10144")
+    # Removes all folders from the process directory.
+    # detector.bank.purge_folder()
     detector_dict = detector.detect(img, img_id)
     for key in detector_dict.keys():
         print(key, detector_dict[key])
-
-    # bankOps.generate_arr()
-    # bankOps.get_arr_dict()
-    # bankOps.purge_arr()
